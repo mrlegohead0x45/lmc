@@ -1,0 +1,35 @@
+WHITESPACE = _{ " " | "\t" }
+
+char = _{ ASCII_ALPHA | "_" }
+
+ident = @{ !instruction_name ~ (!ASCII_DIGIT ~ (char | ASCII_DIGIT)+) }
+
+number = @{ ASCII_DIGIT+ }
+
+instruction_name = {
+      ^"ADD" | ^"SUB" | ^"STA" | ^"LDA" | ^"BRA" | ^"BRZ" | ^"BRP"
+    | ^"INP" | ^"OUT" | ^"HLT" | ^"DAT"
+}
+single_operand_instruction_name = {
+    ^"ADD" | ^"SUB" | ^"STA" | ^"LDA" | ^"BRA" | ^"BRZ" | ^"BRP"
+}
+
+single_operand_instruction = _{
+    single_operand_instruction_name ~
+    (ident  | number)
+}
+
+dat_instruction = { ident ~ ^"DAT" ~ number? }
+
+instruction = { 
+    ^"INP" | ^"OUT" | ^"HLT"
+    | single_operand_instruction    
+}
+
+label = { ident ~ ":"? } 
+
+line = { ((label? ~ instruction) | dat_instruction)? ~ comment? ~ "\n" }
+
+comment = { (";" | "#" | "//") ~ (!"\n" ~ ANY)* }
+
+program = _{ SOI ~ line* ~ EOI }
